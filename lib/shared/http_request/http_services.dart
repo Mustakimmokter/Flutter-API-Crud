@@ -4,12 +4,11 @@ import 'package:http/http.dart' as http;
 
 class HttpServices {
 
-  static const String _baseURL = 'https://jsonplaceholder.typicode.com';
+  static const String _baseURL = 'https://jsonplaceholder.typicode.com/posts';
 
  static Future<void> postData(String url, Map<String,dynamic> body)async{
-    //const url = 'https://jsonplaceholder.typicode.com/posts';
     http.Response response = await http.post(
-      Uri.parse(_baseURL+url),
+      Uri.parse(_baseURL),
       body: jsonEncode(body),
       headers: {'Content-type': 'application/json; charset=UTF-8',}
     );

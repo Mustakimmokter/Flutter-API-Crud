@@ -8,13 +8,13 @@ class CustomModalSheet extends StatelessWidget {
        required this.descriptionCTRL,
        required this.id,
         required this.onTap,
-        required this.indicatorColor,
+        required this.buttonTitle,
      });
 
      final TextEditingController titleCTRL,descriptionCTRL;
      final int id;
      final VoidCallback onTap;
-     final Color indicatorColor;
+     final String buttonTitle;
 
   @override
   Widget build(BuildContext context) {
@@ -55,7 +55,7 @@ class CustomModalSheet extends StatelessWidget {
             const Spacer(flex: 1),
             SizedBox(
               width: double.maxFinite,
-              child: BottomButton(title: 'dsfds', onPressed: (){}),
+              child: BottomButton(title: buttonTitle, onPressed: onTap,),
             ),
             const Spacer(flex: 10),
           ],

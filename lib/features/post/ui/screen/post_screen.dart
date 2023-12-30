@@ -1,12 +1,14 @@
 
 import 'package:flutter/material.dart';
 import 'package:flutter_curd_with_api/shared/common_widgets/index.dart';
+import 'package:flutter_curd_with_api/shared/http_request/http_services.dart';
 
 
 class PostScreen extends StatelessWidget {
   PostScreen({super.key});
   
-  final TextEditingController titleCTRL = TextEditingController();
+  final TextEditingController _titleCTRL = TextEditingController();
+  final TextEditingController _descriptionCTRL = TextEditingController();
 
 
   @override
@@ -27,19 +29,25 @@ class PostScreen extends StatelessWidget {
             const Spacer(flex: 5,),
             CustomTextField(
               hintText: 'Enter title',
-              controller: titleCTRL,
+              controller: _titleCTRL,
             ),
             //const Text('Required title',style: TextStyle(color: Colors.red,fontWeight: FontWeight.w500),),
             const SizedBox(height: 10),
             CustomTextField(
               hintText: 'Enter description',
-              controller: titleCTRL,
+              controller: _descriptionCTRL,
             ),
             //const Text('Required title',style: TextStyle(color: Colors.red,fontWeight: FontWeight.w500),),
             const SizedBox(height: 30),
             BottomButton(
               title: 'Submit',
-              onPressed: (){},
+              onPressed: (){
+                final Map<String,dynamic> body = {
+                  'title': _titleCTRL.text,
+                  'body': _descriptionCTRL.text,
+                };
+                HttpServices.postData('posts', body);
+              },
             ),
             const Spacer(flex: 5,),
           ],
