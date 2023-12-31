@@ -1,11 +1,27 @@
 
-import 'package:flutter/material.dart';
-import 'package:flutter_curd_with_api/shared/common_widgets/index.dart';
-import 'package:flutter_curd_with_api/shared/http_request/http_services.dart';
+// ignore_for_file: use_build_context_synchronously
 
+import 'package:flutter/material.dart';
+import 'package:flutter_curd_with_api/features/home/ui/screens/home_screen.dart';
+import 'package:flutter_curd_with_api/features/post/provider/post_provider.dart';
+import 'package:flutter_curd_with_api/shared/common_widgets/index.dart';
+import 'package:flutter_curd_with_api/shared/models/post_model.dart';
+import 'package:provider/provider.dart';
 
 class PostScreen extends StatelessWidget {
-  PostScreen({super.key});
+  const PostScreen({super.key});
+
+  @override
+  Widget build(BuildContext context) {
+    return ChangeNotifierProvider(
+      create: (context) => PostProvider(),
+      child: PostScreenBody(),
+    );
+  }
+}
+
+class PostScreenBody extends StatelessWidget {
+  PostScreenBody({super.key});
   
   final TextEditingController _titleCTRL = TextEditingController();
   final TextEditingController _descriptionCTRL = TextEditingController();
@@ -13,6 +29,7 @@ class PostScreen extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final postProvider = Provider.of<PostProvider>(context);
     return Scaffold(
       body: Padding(
         padding: const EdgeInsets.all(20),
@@ -40,13 +57,40 @@ class PostScreen extends StatelessWidget {
             //const Text('Required title',style: TextStyle(color: Colors.red,fontWeight: FontWeight.w500),),
             const SizedBox(height: 30),
             BottomButton(
-              title: 'Submit',
-              onPressed: (){
-                final Map<String,dynamic> body = {
-                  'title': _titleCTRL.text,
-                  'body': _descriptionCTRL.text,
-                };
-                HttpServices.postData('posts', body);
+             child: Consumer<PostProvider>(
+               builder: (context, postUpdate, child) {
+                 return Row(
+                   children: [
+                     Spacer(flex: postUpdate.isUploaded? 8: 10,),
+                     const Text('Submit',style: TextStyle(color: Colors.white,fontSize: 16,fontWeight: FontWeight.bold),),
+                     const Spacer(flex: 6,),
+                     postUpdate.isUploaded? SizedBox():
+                     const SizedBox(
+                       width: 25,
+                       height: 25,
+                       child: CircularProgressIndicator(color: Colors.white,),
+                     ),
+                     const Spacer(flex: 2,),
+                   ],
+                 );
+               },
+             ),
+              onPressed: ()async{
+                if(_titleCTRL.text.isNotEmpty && _descriptionCTRL.text.isNotEmpty){
+                  final  body = PostModel(
+                      title: _titleCTRL.text,
+                      body: _descriptionCTRL.text
+                  );
+                  final response = await  postProvider.postData(body);
+                  if(response.statusCode == 201){
+                    const snackBar = SnackBar(content: Text('Successful Added'),duration: Duration(seconds: 1),);
+                    Navigator.pushAndRemoveUntil(context, MaterialPageRoute(builder: (_)=>HomeScreen()), (route) => false);
+                    ScaffoldMessenger.of(context).showSnackBar(snackBar);
+                    _descriptionCTRL.clear();
+                    _titleCTRL.clear();
+                  }
+                }
+
               },
             ),
             const Spacer(flex: 5,),

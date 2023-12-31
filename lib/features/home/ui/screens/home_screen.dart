@@ -102,8 +102,6 @@ class HomeScreen extends StatelessWidget {
                                 descriptionCTRL: _descriptionCTRL,
                                 id: 1,
                                 onTap: (){
-                                  print('Update');
-                                  print(_titleCTRL.text);
                                 },
                               );
                             },);
@@ -117,7 +115,7 @@ class HomeScreen extends StatelessWidget {
                             child: const Icon(Icons.edit,size: 18,color: Colors.white,),
                           ),
                         ),
-                        SizedBox(height: 20),
+                        const SizedBox(height: 20),
                         // Delete Button
                         GestureDetector(
                           onTap: (){
