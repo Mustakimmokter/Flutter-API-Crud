@@ -1,31 +1,35 @@
+// ignore_for_file: use_build_context_synchronously
+
 import 'package:flutter/material.dart';
+import 'package:flutter_curd_with_api/features/home/provider/home_provider.dart';
 import 'package:flutter_curd_with_api/features/home/ui/components/bottom_sheet.dart';
 import 'package:flutter_curd_with_api/features/post/ui/screen/post_screen.dart';
 import 'package:flutter_curd_with_api/shared/common_widgets/index.dart';
+import 'package:provider/provider.dart';
 
 // ignore: must_be_immutable
 class HomeScreen extends StatelessWidget {
-   HomeScreen({super.key});
+  HomeScreen({super.key});
 
   late TextEditingController _titleCTRL ;
   late TextEditingController _descriptionCTRL;
 
   @override
-  Widget build(BuildContext context) {
+  Widget build(BuildContext context){
+    final homeProvider = Provider.of<HomeProvider>(context);
     return Scaffold(
       appBar: AppBar(),
-      body: RefreshIndicator(
-        color: Colors.cyan,
-        onRefresh: ()async {
-        },
-        child: Stack(
-          children: [
-            ListView.builder(
+      body: homeProvider.products.isNotEmpty ?
+      Stack(
+        children: [
+        Consumer<HomeProvider>(
+          builder: (context, products, child) {
+            return   ListView.builder(
               padding: const EdgeInsets.only(left: 20,right: 20,top: 20,bottom: 60),
-              itemCount: 6,
+              itemCount: products.products.length,
               itemBuilder: (context, index) {
                 return Row(
-                 crossAxisAlignment: CrossAxisAlignment.start,
+                  crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
                     // thumbnail
                     GestureDetector(
@@ -39,49 +43,49 @@ class HomeScreen extends StatelessWidget {
                           height: 110,
                           width: 110,
                           decoration: BoxDecoration(
-                              gradient: const LinearGradient(
-                                colors: [
-                                Colors.red,
-                                Colors.blue
-                              ],
-                                begin: Alignment.topCenter,
-                                end: Alignment.bottomCenter
-                              ),
-                              border: Border.all(color: Colors.grey.shade300),
-                              borderRadius: BorderRadius.circular(14)),
+                            color: Colors.grey.shade300,
+                            border: Border.all(color: Colors.grey.shade300),
+                            borderRadius: BorderRadius.circular(14),
+                            image: DecorationImage(
+                              image: NetworkImage(products.products[index].image!),
+                              fit: BoxFit.cover,
+                            ),
+                          ),
                         ),
                       ),
                     ),
                     const SizedBox(width: 10),
-                    const Expanded(
+                    Expanded(
                       child: Column(
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
-                          SizedBox(
+                          const SizedBox(
                             width: 10,
                           ),
                           Text(
-                            'Products title',
-                            style: TextStyle(
-                                fontSize: 18, fontWeight: FontWeight.w500),
+                            products.products[index].title!,
+                            style: const TextStyle(
+                                fontSize: 18, fontWeight: FontWeight.w500,overflow: TextOverflow.ellipsis,
+                            ),
                           ),
                           Text(
-                            'products rating}',
-                            style: TextStyle(
-                              fontSize: 16,
+                            'Products description${products.products[index].description}',
+                            style: const TextStyle(),
+                            maxLines: 2,
+                          ),
+                          Text(
+                            'Rating: ${products.products[index].rating!.rate}',
+                            style: const TextStyle(
+                              fontSize: 12,
                               fontWeight: FontWeight.w500,
                             ),
                           ),
                           Text(
-                            'products price}',
-                            style: TextStyle(
-                                fontSize: 16,
+                            'products price: ${products.products[index].price}',
+                            style: const TextStyle(
+                                fontSize: 14,
                                 fontWeight: FontWeight.w500,
                                 color: Colors.grey),
-                          ),
-                          Text(
-                            'Products description}',
-                            style: TextStyle(overflow: TextOverflow.ellipsis),
                           ),
                         ],
                       ),
@@ -93,16 +97,14 @@ class HomeScreen extends StatelessWidget {
                         // Edit
                         GestureDetector(
                           onTap: (){
-                            _titleCTRL = TextEditingController(text: 'Title');
-                            _descriptionCTRL = TextEditingController(text: 'Des');
+                            _titleCTRL = TextEditingController(text: products.products[index].title);
+                            _descriptionCTRL = TextEditingController(text: products.products[index].description);
                             showModalBottomSheet(context: context, builder: (context) {
                               return CustomModalSheet(
                                 buttonTitle: 'Save',
                                 titleCTRL: _titleCTRL,
                                 descriptionCTRL: _descriptionCTRL,
-                                id: 1,
-                                onTap: (){
-                                },
+                                id: products.products[index].id!,
                               );
                             },);
                           },
@@ -118,7 +120,12 @@ class HomeScreen extends StatelessWidget {
                         const SizedBox(height: 20),
                         // Delete Button
                         GestureDetector(
-                          onTap: (){
+                          onTap: ()async{
+                            final response = await homeProvider.deleteData(products.products[index].id!);
+                            if(response.statusCode == 200){
+                              const snackBar = SnackBar(content: Text('Successfully Deleted'),duration: Duration(seconds: 1),);
+                              ScaffoldMessenger.of(context).showSnackBar(snackBar);
+                            }
                           },
                           child: Container(
                             padding: const EdgeInsets.symmetric(horizontal: 4,vertical: 4),
@@ -134,20 +141,24 @@ class HomeScreen extends StatelessWidget {
                   ],
                 );
               },
-            ),
-            Positioned(
-              left: 20,
-              right: 20,
-              bottom: 14,
-              child: BottomButton(
-                title: 'Add New Item',
-                onPressed: (){
-                  Navigator.push(context, MaterialPageRoute(builder: (_)=>PostScreen()));
-                },
-              ),
-            ),
-          ],
+            );
+          },
         ),
+          Positioned(
+            left: 20,
+            right: 20,
+            bottom: 14,
+            child: BottomButton(
+              title: 'Add New Item',
+              onPressed: (){
+                Navigator.push(context, MaterialPageRoute(builder: (_)=>PostScreen()));
+              },
+            ),
+          ),
+        ],
+      ):
+      const Center(
+        child: CircularProgressIndicator(),
       ),
     );
   }

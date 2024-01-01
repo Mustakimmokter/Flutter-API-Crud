@@ -5,7 +5,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_curd_with_api/features/home/ui/screens/home_screen.dart';
 import 'package:flutter_curd_with_api/features/post/provider/post_provider.dart';
 import 'package:flutter_curd_with_api/shared/common_widgets/index.dart';
-import 'package:flutter_curd_with_api/shared/models/post_model.dart';
+import 'package:flutter_curd_with_api/shared/models/products.dart';
 import 'package:provider/provider.dart';
 
 class PostScreen extends StatelessWidget {
@@ -48,13 +48,13 @@ class PostScreenBody extends StatelessWidget {
               hintText: 'Enter title',
               controller: _titleCTRL,
             ),
-            //const Text('Required title',style: TextStyle(color: Colors.red,fontWeight: FontWeight.w500),),
+            postProvider.isEmptyTitle? const Text('Required title',style: TextStyle(color: Colors.red,fontWeight: FontWeight.w500),):SizedBox(),
             const SizedBox(height: 10),
             CustomTextField(
               hintText: 'Enter description',
               controller: _descriptionCTRL,
             ),
-            //const Text('Required title',style: TextStyle(color: Colors.red,fontWeight: FontWeight.w500),),
+            postProvider.isEmptyDes ? const Text('Required description',style: TextStyle(color: Colors.red,fontWeight: FontWeight.w500),):SizedBox(),
             const SizedBox(height: 30),
             BottomButton(
              child: Consumer<PostProvider>(
@@ -64,7 +64,7 @@ class PostScreenBody extends StatelessWidget {
                      Spacer(flex: postUpdate.isUploaded? 8: 10,),
                      const Text('Submit',style: TextStyle(color: Colors.white,fontSize: 16,fontWeight: FontWeight.bold),),
                      const Spacer(flex: 6,),
-                     postUpdate.isUploaded? SizedBox():
+                     postUpdate.isUploaded? const SizedBox():
                      const SizedBox(
                        width: 25,
                        height: 25,
@@ -77,18 +77,21 @@ class PostScreenBody extends StatelessWidget {
              ),
               onPressed: ()async{
                 if(_titleCTRL.text.isNotEmpty && _descriptionCTRL.text.isNotEmpty){
-                  final  body = PostModel(
+                  final  body = Products(
                       title: _titleCTRL.text,
-                      body: _descriptionCTRL.text
+                      description: _descriptionCTRL.text
                   );
                   final response = await  postProvider.postData(body);
-                  if(response.statusCode == 201){
+                  if(response.statusCode == 200){
                     const snackBar = SnackBar(content: Text('Successful Added'),duration: Duration(seconds: 1),);
                     Navigator.pushAndRemoveUntil(context, MaterialPageRoute(builder: (_)=>HomeScreen()), (route) => false);
                     ScaffoldMessenger.of(context).showSnackBar(snackBar);
                     _descriptionCTRL.clear();
                     _titleCTRL.clear();
                   }
+
+                }else{
+                  postProvider.textFieldEmptyError(_titleCTRL.text,_descriptionCTRL.text);
                 }
 
               },
